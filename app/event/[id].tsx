@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
-  useWindowDimensions,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { formatDate } from "date-fns";
@@ -28,8 +27,6 @@ import { generateICS } from "@/utils/calendar";
 export default function EventDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { state, dispatch } = useEvents();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
 
   const [heroLoading, setHeroLoading] = useState(true);
   const [heroError, setHeroError] = useState(false);
@@ -75,24 +72,20 @@ export default function EventDetailsScreen() {
 
       {/* ── Hero Image ── */}
       {heroError ? (
-        <View style={[styles.heroFallback, isTablet && styles.heroTall]}>
+        <View style={styles.heroFallback}>
           <Ionicons name="image-outline" size={48} color="#CBD5E1" />
           <AppText style={styles.fallbackText}>No Image</AppText>
         </View>
       ) : (
         <View>
           {heroLoading && (
-            <View style={[styles.heroSkeleton, isTablet && styles.heroTall]}>
+            <View style={styles.heroSkeleton}>
               <ActivityIndicator size="large" color="#CBD5E1" />
             </View>
           )}
           <Image
             source={{ uri: event.imageUrl }}
-            style={[
-              styles.image,
-              isTablet && styles.heroTall,
-              heroLoading && styles.imageHidden,
-            ]}
+            style={[styles.image, heroLoading && styles.imageHidden]}
             resizeMode="cover"
             fadeDuration={200}
             progressiveRenderingEnabled
@@ -105,130 +98,114 @@ export default function EventDetailsScreen() {
         </View>
       )}
 
-      {/* ── Tablet: two-column layout ── */}
-      <View style={[styles.content, isTablet && styles.contentTablet]}>
-        {/* LEFT column on tablet / full width on mobile */}
-        <View style={isTablet ? styles.leftCol : styles.fullCol}>
-          <View style={styles.categoryBadge}>
-            <AppText style={styles.categoryText}>{event.category}</AppText>
-          </View>
+      <View style={styles.content}>
+        <View style={styles.categoryBadge}>
+          <AppText style={styles.categoryText}>{event.category}</AppText>
+        </View>
 
-          <AppText style={styles.title}>{event.title}</AppText>
-          <AppText style={styles.description}>{event.description}</AppText>
+        <AppText style={styles.title}>{event.title}</AppText>
+        <AppText style={styles.description}>{event.description}</AppText>
 
-          {/* Info cards */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Ionicons
-                name="calendar-outline"
-                size={18}
-                color={COLORS.primary}
-              />
-              <AppText style={styles.infoText}>
-                {formatDate(new Date(event.date), "dd MMM yyyy, hh:mm a")}
-              </AppText>
-            </View>
-          </View>
-
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Ionicons
-                name="location-outline"
-                size={18}
-                color={COLORS.primary}
-              />
-              <AppText style={styles.infoText}>{event.location}</AppText>
-            </View>
-          </View>
-
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Ionicons
-                name="people-outline"
-                size={18}
-                color={COLORS.primary}
-              />
-              <AppText style={styles.infoText}>
-                {event.attendeeCount} Attendees
-              </AppText>
-            </View>
-            <AttendeeAvatars attendeeCount={event.attendeeCount} />
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Ionicons
+              name="calendar-outline"
+              size={18}
+              color={COLORS.primary}
+            />
+            <AppText style={styles.infoText}>
+              {formatDate(new Date(event.date), "dd MMM yyyy, hh:mm a")}
+            </AppText>
           </View>
         </View>
 
-        <View style={isTablet ? styles.rightCol : styles.fullCol}>
-          <View style={styles.actionRow}>
-            <View style={styles.actionBtn}>
-              <AppButton
-                title={event.isRSVPed ? "Going ✓" : "RSVP Event"}
-                onPress={() =>
-                  dispatch({ type: "TOGGLE_RSVP", payload: event.id })
-                }
-              />
-            </View>
-            <View style={styles.actionBtn}>
-              <AppButton
-                title="📅  Add To Calendar"
-                onPress={exportToCalendar}
-              />
-            </View>
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Ionicons
+              name="location-outline"
+              size={18}
+              color={COLORS.primary}
+            />
+            <AppText style={styles.infoText}>{event.location}</AppText>
           </View>
+        </View>
 
-          {/* Host section */}
-          <View style={styles.hostSection}>
-            <AppText style={styles.hostTitle}>Hosted By</AppText>
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Ionicons name="people-outline" size={18} color={COLORS.primary} />
+            <AppText style={styles.infoText}>
+              {event.attendeeCount} Attendees
+            </AppText>
+          </View>
+          <AttendeeAvatars attendeeCount={event.attendeeCount} />
+        </View>
 
-            <TouchableOpacity
-              style={styles.hostCard}
-              onPress={() =>
-                router.push({
-                  pathname: "/host/[id]",
-                  params: { id: event.hostName },
-                })
-              }
-            >
-              {avatarError ? (
-                <View style={styles.avatarFallback}>
-                  <Ionicons name="person" size={28} color="#CBD5E1" />
-                </View>
-              ) : (
-                <View>
-                  {avatarLoading && (
-                    <View style={styles.avatarSkeleton}>
-                      <ActivityIndicator size="small" color="#CBD5E1" />
-                    </View>
-                  )}
-                  <Image
-                    source={{ uri: event.hostAvatar }}
-                    style={[
-                      styles.hostAvatar,
-                      avatarLoading && styles.imageHidden,
-                    ]}
-                    fadeDuration={200}
-                    progressiveRenderingEnabled
-                    onLoad={() => setAvatarLoading(false)}
-                    onError={() => {
-                      setAvatarLoading(false);
-                      setAvatarError(true);
-                    }}
-                  />
-                </View>
-              )}
+        <View style={styles.rsvpContainer}>
+          <AppButton
+            title={event.isRSVPed ? "Going ✓" : "RSVP Event"}
+            onPress={() => dispatch({ type: "TOGGLE_RSVP", payload: event.id })}
+          />
+        </View>
 
-              <View style={styles.hostContent}>
-                <AppText style={styles.hostName}>{event.hostName}</AppText>
-                <AppText style={styles.hostSubtitle}>
-                  {event.attendeeCount}+ attendees joined events
-                </AppText>
+        <View style={styles.calendarContainer}>
+          <AppButton title="📅 Add To Calendar" onPress={exportToCalendar} />
+        </View>
+
+        {/* ── Host Section ── */}
+        <View style={styles.hostSection}>
+          <AppText style={styles.hostTitle}>Hosted By</AppText>
+
+          <TouchableOpacity
+            style={styles.hostCard}
+            onPress={() =>
+              router.push({
+                pathname: "/host/[id]",
+                params: { id: event.hostName },
+              })
+            }
+          >
+            {/* Host Avatar */}
+            {avatarError ? (
+              <View style={styles.avatarFallback}>
+                <Ionicons name="person" size={28} color="#CBD5E1" />
               </View>
+            ) : (
+              <View>
+                {avatarLoading && (
+                  <View style={styles.avatarSkeleton}>
+                    <ActivityIndicator size="small" color="#CBD5E1" />
+                  </View>
+                )}
+                <Image
+                  source={{ uri: event.hostAvatar }}
+                  style={[
+                    styles.hostAvatar,
+                    avatarLoading && styles.imageHidden,
+                  ]}
+                  fadeDuration={200}
+                  progressiveRenderingEnabled
+                  onLoad={() => setAvatarLoading(false)}
+                  onError={() => {
+                    setAvatarLoading(false);
+                    setAvatarError(true);
+                  }}
+                />
+              </View>
+            )}
 
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={COLORS.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
+            <View style={styles.hostContent}>
+              <AppText style={styles.hostName}>{event.hostName}</AppText>
+              <AppText style={styles.hostSubtitle}>
+                {event.attendeeCount}+ attendees joined events
+              </AppText>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={COLORS.textSecondary}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -245,10 +222,6 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 360,
-  },
-
-  heroTall: {
-    height: 460,
   },
 
   imageHidden: {
@@ -313,26 +286,6 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
   },
 
-  contentTablet: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 24,
-    paddingHorizontal: 32,
-    paddingTop: SPACING.lg,
-  },
-
-  leftCol: {
-    flex: 1.2,
-  },
-
-  rightCol: {
-    flex: 0.8,
-  },
-
-  fullCol: {
-    width: "100%",
-  },
-
   categoryBadge: {
     alignSelf: "flex-start",
     backgroundColor: "#EFF6FF",
@@ -386,19 +339,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  actionRow: {
-    flexDirection: "row",
-    gap: 10,
+  rsvpContainer: {
     marginTop: SPACING.lg,
-    marginBottom: SPACING.md,
   },
 
-  actionBtn: {
-    flex: 1,
+  calendarContainer: {
+    marginTop: 12,
   },
 
   hostSection: {
-    marginTop: SPACING.md,
+    marginTop: SPACING.xl,
   },
 
   hostTitle: {
