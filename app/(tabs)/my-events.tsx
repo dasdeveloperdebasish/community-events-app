@@ -1,6 +1,6 @@
-import { FlatList, View, StyleSheet } from "react-native";
+import { useState } from "react";
+import { FlatList, View, StyleSheet, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 
 import Screen from "@/components/common/Screen";
 import AppText from "@/components/common/AppText";
@@ -15,6 +15,8 @@ import { SPACING } from "@/constants/spacing";
 export default function MyEventsScreen() {
   const { state, dispatch } = useEvents();
 
+  const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
+
   const now = new Date();
 
   const upcomingEvents = state.myEvents.filter(
@@ -24,6 +26,8 @@ export default function MyEventsScreen() {
   const pastEvents = state.myEvents.filter(
     (event) => new Date(event.date) <= now,
   );
+
+  const events = activeTab === "upcoming" ? upcomingEvents : pastEvents;
 
   if (!state.myEvents.length) {
     return (
@@ -36,108 +40,101 @@ export default function MyEventsScreen() {
   return (
     <Screen>
       <FlatList
-        data={[...upcomingEvents, ...pastEvents]}
+        data={events}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <>
             <View style={styles.header}>
-              <View>
-                <AppText style={styles.subtitle}>Your Schedule</AppText>
+              <AppText style={styles.title}>My Events</AppText>
 
-                <AppText style={styles.title}>My Events</AppText>
-
-                <AppText style={styles.description}>
-                  Keep track of all your RSVP'd events
-                </AppText>
-              </View>
-
-              <View style={styles.iconContainer}>
-                <Ionicons name="calendar" size={26} color={COLORS.primary} />
-              </View>
+              <AppText style={styles.subtitle}>
+                {state.myEvents.length} Saved Events
+              </AppText>
             </View>
 
-            <View style={styles.statsCard}>
-              <View style={styles.statItem}>
-                <Ionicons
-                  name="time-outline"
-                  size={20}
-                  color={COLORS.primary}
-                />
-
-                <AppText style={styles.statNumber}>
-                  {upcomingEvents.length}
+            <View style={styles.tabsContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.tab,
+                  activeTab === "upcoming" && styles.activeTab,
+                ]}
+                onPress={() => setActiveTab("upcoming")}
+              >
+                <AppText
+                  style={[
+                    styles.tabText,
+                    activeTab === "upcoming" && styles.activeTabText,
+                  ]}
+                >
+                  Upcoming ({upcomingEvents.length})
                 </AppText>
+              </TouchableOpacity>
 
-                <AppText style={styles.statLabel}>Upcoming</AppText>
-              </View>
-
-              <View style={styles.divider} />
-
-              <View style={styles.statItem}>
-                <Ionicons
-                  name="checkmark-circle-outline"
-                  size={20}
-                  color={COLORS.primary}
-                />
-
-                <AppText style={styles.statNumber}>{pastEvents.length}</AppText>
-
-                <AppText style={styles.statLabel}>Attended</AppText>
-              </View>
+              <TouchableOpacity
+                style={[styles.tab, activeTab === "past" && styles.activeTab]}
+                onPress={() => setActiveTab("past")}
+              >
+                <AppText
+                  style={[
+                    styles.tabText,
+                    activeTab === "past" && styles.activeTabText,
+                  ]}
+                >
+                  Past ({pastEvents.length})
+                </AppText>
+              </TouchableOpacity>
             </View>
 
-            {upcomingEvents.length > 0 && (
+            {events.length > 0 && (
               <View style={styles.sectionHeader}>
-                <AppText style={styles.sectionTitle}>Upcoming Events</AppText>
+                <AppText style={styles.sectionTitle}>
+                  {activeTab === "upcoming" ? "Upcoming Events" : "Past Events"}
+                </AppText>
 
                 <AppText style={styles.sectionSubtitle}>
-                  Events you're planning to attend
+                  {activeTab === "upcoming"
+                    ? "Events you're planning to attend"
+                    : "Events you've already attended"}
                 </AppText>
               </View>
             )}
           </>
         }
-        renderItem={({ item, index }) => {
-          const showPastHeader =
-            index === upcomingEvents.length && pastEvents.length > 0;
-
-          return (
-            <>
-              {showPastHeader && (
-                <View style={styles.sectionHeader}>
-                  <AppText style={styles.sectionTitle}>Past Events</AppText>
-
-                  <AppText style={styles.sectionSubtitle}>
-                    Events you've already attended
-                  </AppText>
-                </View>
-              )}
-
-              <EventCard
-                event={{
-                  ...item,
-                  isRSVPed: true,
-                }}
-                onPress={() =>
-                  router.push({
-                    pathname: "/event/[id]",
-                    params: {
-                      id: item.id,
-                    },
-                  })
-                }
-                onRSVPPress={() =>
-                  dispatch({
-                    type: "TOGGLE_RSVP",
-                    payload: item.id,
-                  })
-                }
-              />
-            </>
-          );
-        }}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <EmptyState
+              title={
+                activeTab === "upcoming"
+                  ? "No Upcoming Events"
+                  : "No Past Events"
+              }
+            />
+          </View>
+        }
+        renderItem={({ item }) => (
+          <EventCard
+            event={{
+              ...item,
+              isRSVPed: true,
+            }}
+            onPress={() =>
+              router.push({
+                pathname: "/event/[id]",
+                params: {
+                  id: item.id,
+                },
+              })
+            }
+            onRSVPPress={() =>
+              dispatch({
+                type: "TOGGLE_RSVP",
+                payload: item.id,
+              })
+            }
+          />
+        )}
       />
     </Screen>
   );
@@ -149,84 +146,60 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-
     marginTop: SPACING.sm,
     marginBottom: SPACING.lg,
   },
 
-  subtitle: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-  },
-
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: "800",
     color: COLORS.text,
   },
 
-  description: {
+  subtitle: {
     marginTop: 4,
+    fontSize: 15,
     color: COLORS.textSecondary,
   },
 
-  iconContainer: {
-    width: 56,
-    height: 56,
-
-    borderRadius: 28,
-
-    backgroundColor: "#EFF6FF",
-
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  statsCard: {
+  tabsContainer: {
     flexDirection: "row",
 
-    backgroundColor: "#FFF",
+    backgroundColor: "#FFFFFF",
 
-    borderRadius: 20,
+    borderRadius: 16,
 
-    paddingVertical: SPACING.lg,
+    padding: 4,
 
     marginBottom: SPACING.xl,
 
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
 
-  statItem: {
+  tab: {
     flex: 1,
+
     alignItems: "center",
+    justifyContent: "center",
+
+    paddingVertical: 12,
+
+    borderRadius: 12,
   },
 
-  statNumber: {
-    fontSize: 24,
-    fontWeight: "800",
-
-    marginTop: 6,
+  activeTab: {
+    backgroundColor: COLORS.primary,
   },
 
-  statLabel: {
+  tabText: {
+    fontSize: 14,
+    fontWeight: "600",
     color: COLORS.textSecondary,
-    marginTop: 2,
   },
 
-  divider: {
-    width: 1,
-    backgroundColor: COLORS.border,
+  activeTabText: {
+    color: "#FFFFFF",
   },
 
   sectionHeader: {
@@ -242,5 +215,9 @@ const styles = StyleSheet.create({
   sectionSubtitle: {
     marginTop: 4,
     color: COLORS.textSecondary,
+  },
+
+  emptyContainer: {
+    marginTop: 40,
   },
 });

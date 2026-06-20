@@ -1,4 +1,10 @@
-import { FlatList, Image, StyleSheet, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+} from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,6 +26,11 @@ export default function HostScreen() {
 
   const hostedEvents = state.events.filter((event) => event.hostName === id);
 
+  const totalAttendees = hostedEvents.reduce(
+    (sum, event) => sum + event.attendeeCount,
+    0,
+  );
+
   const host = hostedEvents[0];
 
   if (!host) {
@@ -39,6 +50,17 @@ export default function HostScreen() {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <>
+            <View style={styles.header}>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={styles.backButton}
+              >
+                <Ionicons name="arrow-back" size={20} color={COLORS.text} />
+              </TouchableOpacity>
+
+              <AppText style={styles.headerTitle}>Host Profile</AppText>
+            </View>
+
             <View style={styles.profileCard}>
               <Image
                 source={{
@@ -65,7 +87,7 @@ export default function HostScreen() {
                 />
 
                 <AppText style={styles.statsText}>
-                  {hostedEvents.length} Hosted Events
+                  {hostedEvents.length} Events • {totalAttendees} Attendees
                 </AppText>
               </View>
             </View>
@@ -120,7 +142,35 @@ const styles = StyleSheet.create({
 
   listContent: {
     padding: SPACING.md,
-    paddingBottom: SPACING.xl,
+    paddingBottom: 120,
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: SPACING.lg,
+  },
+
+  backButton: {
+    width: 42,
+    height: 42,
+
+    borderRadius: 21,
+
+    backgroundColor: "#FFF",
+
+    borderWidth: 1,
+    borderColor: COLORS.border,
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginLeft: 12,
+    color: COLORS.text,
   },
 
   profileCard: {
@@ -130,38 +180,34 @@ const styles = StyleSheet.create({
 
     alignItems: "center",
 
-    paddingVertical: SPACING.xl,
+    paddingVertical: 24,
     paddingHorizontal: SPACING.lg,
 
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
 
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
 
-    elevation: 4,
+    elevation: 3,
   },
 
   avatar: {
-    width: 120,
-    height: 120,
+    width: 90,
+    height: 90,
 
-    borderRadius: 60,
+    borderRadius: 45,
 
     marginBottom: SPACING.md,
-
-    borderWidth: 4,
-    borderColor: "#FFF",
   },
 
   name: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "800",
-
     color: COLORS.text,
   },
 
@@ -207,8 +253,8 @@ const styles = StyleSheet.create({
 
   statsText: {
     marginLeft: 8,
-
     fontWeight: "600",
+    color: COLORS.text,
   },
 
   sectionHeader: {
@@ -216,15 +262,13 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "800",
-
     color: COLORS.text,
   },
 
   sectionSubtitle: {
     marginTop: 4,
-
     color: COLORS.textSecondary,
   },
 });

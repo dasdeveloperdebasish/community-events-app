@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import AppText from "@/components/common/AppText";
 import AppButton from "@/components/common/AppButton";
+import AttendeeAvatars from "@/components/event/AttendeeAvatars";
 
 import { useEvents } from "@/hooks/useEvents";
 
@@ -98,6 +99,8 @@ export default function EventDetailsScreen() {
               {event.attendeeCount} Attendees
             </AppText>
           </View>
+
+          <AttendeeAvatars attendeeCount={event.attendeeCount} />
         </View>
 
         <View style={styles.rsvpContainer}>
@@ -136,7 +139,9 @@ export default function EventDetailsScreen() {
             <View style={styles.hostContent}>
               <AppText style={styles.hostName}>{event.hostName}</AppText>
 
-              <AppText style={styles.hostSubtitle}>Community Organizer</AppText>
+              <AppText style={styles.hostSubtitle}>
+                {event.attendeeCount}+ attendees joined events
+              </AppText>
             </View>
 
             <Ionicons
@@ -266,8 +271,8 @@ const styles = StyleSheet.create({
   },
 
   hostTitle: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "800",
 
     marginBottom: SPACING.md,
   },
@@ -310,11 +315,12 @@ const styles = StyleSheet.create({
 
   hostName: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "800",
   },
 
   hostSubtitle: {
     marginTop: 4,
     color: COLORS.textSecondary,
+    fontSize: 14,
   },
 });

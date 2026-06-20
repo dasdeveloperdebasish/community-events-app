@@ -69,30 +69,35 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      <AppText
-        style={{
-          fontSize: 28,
-          fontWeight: "700",
-          marginBottom: 12,
-        }}
-      >
-        Discover Events
-      </AppText>
-
-      <CategoryTabs
-        selectedCategory={state.selectedCategory}
-        onSelectCategory={(category) =>
-          dispatch({
-            type: "SET_CATEGORY",
-            payload: category,
-          })
-        }
-      />
       <FlatList
         data={filteredEvents}
         numColumns={numColumns}
         key={numColumns}
         keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            <AppText
+              style={{
+                fontSize: 28,
+                fontWeight: "700",
+                marginBottom: 12,
+              }}
+            >
+              Discover Events
+            </AppText>
+
+            <CategoryTabs
+              selectedCategory={state.selectedCategory}
+              onSelectCategory={(category) =>
+                dispatch({
+                  type: "SET_CATEGORY",
+                  payload: category,
+                })
+              }
+            />
+          </>
+        }
         columnWrapperStyle={
           numColumns > 1
             ? {
@@ -101,7 +106,7 @@ export default function HomeScreen() {
             : undefined
         }
         contentContainerStyle={{
-          paddingTop: 12,
+          paddingBottom: 120,
         }}
         renderItem={({ item }) => (
           <View

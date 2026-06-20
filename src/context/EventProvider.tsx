@@ -2,10 +2,11 @@ import { ReactNode, useEffect, useReducer } from "react";
 
 import { EventContext } from "./EventContext";
 import { eventReducer } from "./EventReducer";
+import { EventState } from "./types";
 
 import { getMyEvents, saveMyEvents } from "@/storage/eventStorage";
 
-const initialState = {
+const initialState: EventState = {
   events: [],
   myEvents: [],
   loading: false,
