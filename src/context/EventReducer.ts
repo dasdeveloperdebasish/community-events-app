@@ -12,12 +12,15 @@ export const eventReducer = (
         error: null,
       };
 
-    case "FETCH_SUCCESS":
+    case "FETCH_SUCCESS": {
+      const customEvents = state.events.filter((event) => event.isCustom);
+
       return {
         ...state,
         loading: false,
-        events: action.payload,
+        events: [...customEvents, ...action.payload],
       };
+    }
 
     case "FETCH_ERROR":
       return {
@@ -76,6 +79,18 @@ export const eventReducer = (
           : [...state.myEvents, updatedEvent],
       };
     }
+    case "ADD_EVENT":
+      return {
+        ...state,
+
+        events: [action.payload, ...state.events],
+      };
+    case "LOAD_CREATED_EVENTS":
+      return {
+        ...state,
+
+        events: [...action.payload, ...state.events],
+      };
 
     default:
       return state;

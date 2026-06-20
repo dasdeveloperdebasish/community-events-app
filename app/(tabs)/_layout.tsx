@@ -11,10 +11,6 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: "#9CA3AF",
 
         tabBarStyle: {
-          height: 70,
-          paddingBottom: 8,
-          paddingTop: 8,
-
           borderTopWidth: 0,
 
           shadowColor: "#000",
@@ -38,7 +34,6 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Discover",
-
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "compass" : "compass-outline"}
@@ -53,10 +48,23 @@ export default function TabsLayout() {
         name="my-events"
         options={{
           title: "My Events",
-
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "calendar" : "calendar-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="create-event"
+        options={{
+          title: "Create",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "add-circle" : "add-circle-outline"}
               size={size}
               color={color}
             />

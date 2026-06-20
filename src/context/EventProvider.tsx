@@ -4,7 +4,12 @@ import { EventContext } from "./EventContext";
 import { eventReducer } from "./EventReducer";
 import { EventState } from "./types";
 
-import { getMyEvents, saveMyEvents } from "@/storage/eventStorage";
+import {
+  getCreatedEvents,
+  getMyEvents,
+  saveCreatedEvents,
+  saveMyEvents,
+} from "@/storage/eventStorage";
 
 const initialState: EventState = {
   events: [],
@@ -23,12 +28,18 @@ export default function EventProvider({ children }: Props) {
 
   useEffect(() => {
     loadPersistedEvents();
+    loadCreatedEvents();
   }, []);
 
   useEffect(() => {
     saveMyEvents(state.myEvents);
   }, [state.myEvents]);
 
+  useEffect(() => {
+    const customEvents = state.events.filter((event) => event.isCustom);
+
+    saveCreatedEvents(customEvents);
+  }, [state.events]);
   const loadPersistedEvents = async () => {
     const events = await getMyEvents();
 
@@ -38,6 +49,14 @@ export default function EventProvider({ children }: Props) {
     });
   };
 
+  const loadCreatedEvents = async () => {
+    const events = await getCreatedEvents();
+
+    dispatch({
+      type: "LOAD_CREATED_EVENTS",
+      payload: events,
+    });
+  };
   return (
     <EventContext.Provider
       value={{

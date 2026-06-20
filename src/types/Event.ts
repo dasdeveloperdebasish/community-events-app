@@ -12,4 +12,5 @@ export interface Event {
   hostAvatar: string;
   imageUrl: string;
   isRSVPed?: boolean;
+  isCustom?: boolean;
 }

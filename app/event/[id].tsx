@@ -8,6 +8,8 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { formatDate } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 
 import AppText from "@/components/common/AppText";
 import AppButton from "@/components/common/AppButton";
@@ -17,6 +19,8 @@ import { useEvents } from "@/hooks/useEvents";
 
 import { COLORS } from "@/constants/colors";
 import { SPACING } from "@/constants/spacing";
+
+import { generateICS } from "@/utils/calendar";
 
 export default function EventDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -37,6 +41,26 @@ export default function EventDetailsScreen() {
       </View>
     );
   }
+
+  const exportToCalendar = async () => {
+    try {
+      const icsContent = generateICS(event);
+
+      const fileUri = FileSystem.cacheDirectory + `${event.id}.ics`;
+
+      await FileSystem.writeAsStringAsync(fileUri, icsContent);
+
+      const available = await Sharing.isAvailableAsync();
+
+      if (!available) {
+        return;
+      }
+
+      await Sharing.shareAsync(fileUri);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <ScrollView
@@ -113,6 +137,10 @@ export default function EventDetailsScreen() {
               })
             }
           />
+        </View>
+
+        <View style={styles.calendarContainer}>
+          <AppButton title="📅 Add To Calendar" onPress={exportToCalendar} />
         </View>
 
         <View style={styles.hostSection}>
@@ -264,6 +292,10 @@ const styles = StyleSheet.create({
 
   rsvpContainer: {
     marginTop: SPACING.lg,
+  },
+
+  calendarContainer: {
+    marginTop: 12,
   },
 
   hostSection: {

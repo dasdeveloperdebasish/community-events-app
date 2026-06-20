@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { FlatList, useWindowDimensions, View } from "react-native";
+import { useEffect, useState } from "react";
+import { FlatList, TextInput, useWindowDimensions, View } from "react-native";
 import { router } from "expo-router";
 
 import Screen from "@/components/common/Screen";
@@ -19,21 +19,11 @@ export default function HomeScreen() {
 
   const numColumns = width >= 768 ? 2 : 1;
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     loadEvents();
   }, []);
-
-  const eventsWithRSVP = state.events.map((event) => ({
-    ...event,
-    isRSVPed: state.myEvents.some((item) => item.id === event.id),
-  }));
-
-  const filteredEvents =
-    state.selectedCategory === "All"
-      ? eventsWithRSVP
-      : eventsWithRSVP.filter(
-          (event) => event.category === state.selectedCategory,
-        );
 
   const loadEvents = async () => {
     try {
@@ -54,6 +44,26 @@ export default function HomeScreen() {
       });
     }
   };
+
+  const eventsWithRSVP = state.events.map((event) => ({
+    ...event,
+    isRSVPed: state.myEvents.some((item) => item.id === event.id),
+  }));
+
+  const filteredEvents = eventsWithRSVP.filter((event) => {
+    const matchesCategory =
+      state.selectedCategory === "All" ||
+      event.category === state.selectedCategory;
+
+    const query = searchQuery.toLowerCase();
+
+    const matchesSearch =
+      event.title.toLowerCase().includes(query) ||
+      event.location.toLowerCase().includes(query) ||
+      event.category.toLowerCase().includes(query);
+
+    return matchesCategory && matchesSearch;
+  });
 
   if (state.loading) {
     return <Loader />;
@@ -86,6 +96,25 @@ export default function HomeScreen() {
             >
               Discover Events
             </AppText>
+
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search events..."
+              style={{
+                backgroundColor: "#FFF",
+
+                borderWidth: 1,
+                borderColor: "#E5E7EB",
+
+                borderRadius: 14,
+
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+
+                marginBottom: 16,
+              }}
+            />
 
             <CategoryTabs
               selectedCategory={state.selectedCategory}
@@ -133,6 +162,7 @@ export default function HomeScreen() {
             />
           </View>
         )}
+        ListEmptyComponent={<EmptyState title="No matching events found" />}
       />
     </Screen>
   );

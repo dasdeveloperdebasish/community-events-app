@@ -33,4 +33,12 @@ export type EventAction =
   | {
       type: "LOAD_PERSISTED_EVENTS";
       payload: Event[];
+    }
+  | {
+      type: "ADD_EVENT";
+      payload: Event;
+    }
+  | {
+      type: "LOAD_CREATED_EVENTS";
+      payload: Event[];
     };
