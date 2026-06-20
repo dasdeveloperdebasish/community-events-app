@@ -9,7 +9,7 @@
     "attendeeCount": 142,
     "hostName": "GDG Dubai",
     "hostAvatar": "https://i.pravatar.cc/150?img=1",
-    "imageUrl": "https://picsum.photos/600/400?random=1"
+    "imageUrl": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-002",
@@ -21,7 +21,7 @@
     "attendeeCount": 95,
     "hostName": "RN Community",
     "hostAvatar": "https://i.pravatar.cc/150?img=2",
-    "imageUrl": "https://picsum.photos/600/400?random=2"
+    "imageUrl": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-003",
@@ -33,7 +33,7 @@
     "attendeeCount": 180,
     "hostName": "AI Dubai",
     "hostAvatar": "https://i.pravatar.cc/150?img=3",
-    "imageUrl": "https://picsum.photos/600/400?random=3"
+    "imageUrl": "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-004",
@@ -45,7 +45,7 @@
     "attendeeCount": 110,
     "hostName": "Jazz Club",
     "hostAvatar": "https://i.pravatar.cc/150?img=4",
-    "imageUrl": "https://picsum.photos/600/400?random=4"
+    "imageUrl": "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-005",
@@ -57,7 +57,7 @@
     "attendeeCount": 500,
     "hostName": "EDM UAE",
     "hostAvatar": "https://i.pravatar.cc/150?img=5",
-    "imageUrl": "https://picsum.photos/600/400?random=5"
+    "imageUrl": "https://images.unsplash.com/photo-1571266028243-e4733b0f0bb0?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-006",
@@ -69,7 +69,7 @@
     "attendeeCount": 65,
     "hostName": "Open Stage",
     "hostAvatar": "https://i.pravatar.cc/150?img=6",
-    "imageUrl": "https://picsum.photos/600/400?random=6"
+    "imageUrl": "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-007",
@@ -81,7 +81,7 @@
     "attendeeCount": 220,
     "hostName": "Sports UAE",
     "hostAvatar": "https://i.pravatar.cc/150?img=7",
-    "imageUrl": "https://picsum.photos/600/400?random=7"
+    "imageUrl": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-008",
@@ -93,7 +93,7 @@
     "attendeeCount": 88,
     "hostName": "Run Club",
     "hostAvatar": "https://i.pravatar.cc/150?img=8",
-    "imageUrl": "https://picsum.photos/600/400?random=8"
+    "imageUrl": "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-009",
@@ -105,7 +105,7 @@
     "attendeeCount": 175,
     "hostName": "Cricket Fans UAE",
     "hostAvatar": "https://i.pravatar.cc/150?img=9",
-    "imageUrl": "https://picsum.photos/600/400?random=9"
+    "imageUrl": "https://images.unsplash.com/photo-1540747913346-19212a4cf528?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-010",
@@ -117,7 +117,7 @@
     "attendeeCount": 300,
     "hostName": "Foodies UAE",
     "hostAvatar": "https://i.pravatar.cc/150?img=10",
-    "imageUrl": "https://picsum.photos/600/400?random=10"
+    "imageUrl": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-011",
@@ -129,7 +129,7 @@
     "attendeeCount": 52,
     "hostName": "Coffee Circle",
     "hostAvatar": "https://i.pravatar.cc/150?img=11",
-    "imageUrl": "https://picsum.photos/600/400?random=11"
+    "imageUrl": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-012",
@@ -141,7 +141,7 @@
     "attendeeCount": 140,
     "hostName": "BBQ Lovers",
     "hostAvatar": "https://i.pravatar.cc/150?img=12",
-    "imageUrl": "https://picsum.photos/600/400?random=12"
+    "imageUrl": "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-013",
@@ -153,7 +153,7 @@
     "attendeeCount": 45,
     "hostName": "Photo Club",
     "hostAvatar": "https://i.pravatar.cc/150?img=13",
-    "imageUrl": "https://picsum.photos/600/400?random=13"
+    "imageUrl": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-014",
@@ -165,7 +165,7 @@
     "attendeeCount": 160,
     "hostName": "Startup Hub",
     "hostAvatar": "https://i.pravatar.cc/150?img=14",
-    "imageUrl": "https://picsum.photos/600/400?random=14"
+    "imageUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop"
   },
   {
     "id": "evt-015",
@@ -177,6 +177,6 @@
     "attendeeCount": 35,
     "hostName": "Readers Circle",
     "hostAvatar": "https://i.pravatar.cc/150?img=15",
-    "imageUrl": "https://picsum.photos/600/400?random=15"
+    "imageUrl": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=400&fit=crop"
   }
 ]

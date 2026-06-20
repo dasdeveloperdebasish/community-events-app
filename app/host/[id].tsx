@@ -4,10 +4,12 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 
 import AppText from "@/components/common/AppText";
 import EventCard from "@/components/event/EventCard";
@@ -18,11 +20,11 @@ import { COLORS } from "@/constants/colors";
 import { SPACING } from "@/constants/spacing";
 
 export default function HostScreen() {
-  const { id } = useLocalSearchParams<{
-    id: string;
-  }>();
-
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { state, dispatch } = useEvents();
+
+  const [avatarLoading, setAvatarLoading] = useState(true);
+  const [avatarError, setAvatarError] = useState(false);
 
   const hostedEvents = state.events.filter((event) => event.hostName === id);
 
@@ -50,6 +52,7 @@ export default function HostScreen() {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <>
+            {/* ── Top bar ── */}
             <View style={styles.header}>
               <TouchableOpacity
                 onPress={() => router.back()}
@@ -57,44 +60,76 @@ export default function HostScreen() {
               >
                 <Ionicons name="arrow-back" size={20} color={COLORS.text} />
               </TouchableOpacity>
-
               <AppText style={styles.headerTitle}>Host Profile</AppText>
             </View>
 
+            {/* ── Profile Card ── */}
             <View style={styles.profileCard}>
-              <Image
-                source={{
-                  uri: host.hostAvatar,
-                }}
-                style={styles.avatar}
-              />
+              {/* Blue accent banner at top of card */}
+              <View style={styles.cardBanner} />
 
+              {/* Avatar — sits on top of banner */}
+              <View style={styles.avatarRing}>
+                {avatarError ? (
+                  <View style={styles.avatarFallback}>
+                    <Ionicons name="person" size={40} color="#CBD5E1" />
+                  </View>
+                ) : (
+                  <>
+                    {avatarLoading && (
+                      <View style={styles.avatarSkeleton}>
+                        <ActivityIndicator size="small" color="#CBD5E1" />
+                      </View>
+                    )}
+                    <Image
+                      source={{ uri: host.hostAvatar }}
+                      style={[
+                        styles.avatar,
+                        avatarLoading && { opacity: 0, position: "absolute" },
+                      ]}
+                      fadeDuration={200}
+                      progressiveRenderingEnabled
+                      onLoad={() => setAvatarLoading(false)}
+                      onError={() => {
+                        setAvatarLoading(false);
+                        setAvatarError(true);
+                      }}
+                    />
+                  </>
+                )}
+              </View>
+
+              {/* Name + badge */}
               <AppText style={styles.name}>{host.hostName}</AppText>
 
               <View style={styles.badgeRow}>
-                <Ionicons name="ribbon" size={16} color={COLORS.primary} />
-
+                <Ionicons name="ribbon" size={14} color={COLORS.primary} />
                 <AppText style={styles.badgeText}>
                   Verified Community Host
                 </AppText>
               </View>
 
-              <View style={styles.statsPill}>
-                <Ionicons
-                  name="calendar-outline"
-                  size={16}
-                  color={COLORS.primary}
-                />
+              {/* Stats */}
+              <View style={styles.statsRow}>
+                <View style={styles.statItem}>
+                  <AppText style={styles.statsValue}>
+                    {hostedEvents.length}
+                  </AppText>
+                  <AppText style={styles.statsLabel}>Events</AppText>
+                </View>
 
-                <AppText style={styles.statsText}>
-                  {hostedEvents.length} Events • {totalAttendees} Attendees
-                </AppText>
+                <View style={styles.statsDivider} />
+
+                <View style={styles.statItem}>
+                  <AppText style={styles.statsValue}>{totalAttendees}</AppText>
+                  <AppText style={styles.statsLabel}>Attendees</AppText>
+                </View>
               </View>
             </View>
 
+            {/* ── Section Header ── */}
             <View style={styles.sectionHeader}>
               <AppText style={styles.sectionTitle}>Hosted Events</AppText>
-
               <AppText style={styles.sectionSubtitle}>
                 Explore events organized by this host
               </AppText>
@@ -108,18 +143,10 @@ export default function HostScreen() {
               isRSVPed: state.myEvents.some((saved) => saved.id === item.id),
             }}
             onPress={() =>
-              router.push({
-                pathname: "/event/[id]",
-                params: {
-                  id: item.id,
-                },
-              })
+              router.push({ pathname: "/event/[id]", params: { id: item.id } })
             }
             onRSVPPress={() =>
-              dispatch({
-                type: "TOGGLE_RSVP",
-                payload: item.id,
-              })
+              dispatch({ type: "TOGGLE_RSVP", payload: item.id })
             }
           />
         )}
@@ -145,6 +172,7 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
 
+  // ── Header ──
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -154,14 +182,10 @@ const styles = StyleSheet.create({
   backButton: {
     width: 42,
     height: 42,
-
     borderRadius: 21,
-
     backgroundColor: "#FFF",
-
     borderWidth: 1,
     borderColor: COLORS.border,
-
     justifyContent: "center",
     alignItems: "center",
   },
@@ -173,96 +197,139 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
 
+  // ── Profile Card ──
   profileCard: {
     backgroundColor: "#FFF",
-
     borderRadius: 24,
-
     alignItems: "center",
-
-    paddingVertical: 24,
-    paddingHorizontal: SPACING.lg,
-
     marginBottom: SPACING.lg,
-
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 4,
+    // extra bottom padding for content below avatar
+    paddingBottom: 24,
+  },
 
-    elevation: 3,
+  // Blue accent strip at card top
+  cardBanner: {
+    width: "100%",
+    height: 80,
+    backgroundColor: "#2563EB",
+    marginBottom: 0,
+  },
+
+  // White ring around avatar
+  avatarRing: {
+    width: 108,
+    height: 108,
+    borderRadius: 54,
+    backgroundColor: "#FFF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -54, // pulls avatar up over the banner
+    marginBottom: 12,
+    borderWidth: 3,
+    borderColor: "#FFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   avatar: {
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
 
-    borderRadius: 45,
+  avatarSkeleton: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-    marginBottom: SPACING.md,
+  avatarFallback: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   name: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "800",
     color: COLORS.text,
+    marginBottom: 6,
   },
 
   badgeRow: {
     flexDirection: "row",
     alignItems: "center",
-
-    marginTop: SPACING.sm,
-
     backgroundColor: "#EFF6FF",
-
     paddingHorizontal: 12,
-    paddingVertical: 8,
-
+    paddingVertical: 6,
     borderRadius: 999,
+    marginBottom: 20,
+    gap: 5,
   },
 
   badgeText: {
-    marginLeft: 6,
-
     color: COLORS.primary,
-
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 13,
   },
 
-  statsPill: {
+  // Stats
+  statsRow: {
     flexDirection: "row",
-    alignItems: "center",
-
-    marginTop: SPACING.md,
-
+    width: "85%",
     backgroundColor: "#F8FAFC",
-
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-
-    borderRadius: 999,
-
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
+    overflow: "hidden",
   },
 
-  statsText: {
-    marginLeft: 8,
-    fontWeight: "600",
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 14,
+    gap: 2,
+  },
+
+  statsDivider: {
+    width: 1,
+    backgroundColor: COLORS.border,
+  },
+
+  statsValue: {
+    fontSize: 20,
+    fontWeight: "800",
     color: COLORS.text,
   },
 
+  statsLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: "500",
+  },
+
+  // ── Section Header ──
   sectionHeader: {
     marginBottom: SPACING.md,
   },
 
   sectionTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "800",
     color: COLORS.text,
   },
@@ -270,5 +337,6 @@ const styles = StyleSheet.create({
   sectionSubtitle: {
     marginTop: 4,
     color: COLORS.textSecondary,
+    fontSize: 14,
   },
 });

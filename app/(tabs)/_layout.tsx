@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { Platform } from "react-native";
 
 export default function TabsLayout() {
   return (
@@ -12,21 +13,22 @@ export default function TabsLayout() {
 
         tabBarStyle: {
           borderTopWidth: 0,
+          backgroundColor: "#FFFFFF",
+          height: 82,
+          paddingBottom: Platform.OS === "ios" ? 24 : 12,
+          paddingTop: 8,
 
           shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: -2,
-          },
+          shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.08,
-          shadowRadius: 8,
-
+          shadowRadius: 12,
           elevation: 10,
         },
 
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: "600",
+          marginTop: 2,
         },
       }}
     >
@@ -37,7 +39,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "compass" : "compass-outline"}
-              size={size}
+              size={size + 4}
               color={color}
             />
           ),
@@ -65,7 +67,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "add-circle" : "add-circle-outline"}
-              size={size}
+              size={size + 4}
               color={color}
             />
           ),
