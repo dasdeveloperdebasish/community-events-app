@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -28,6 +29,7 @@ const categories: Category[] = ["Tech", "Music", "Sports", "Food", "Other"];
 
 export default function CreateEventScreen() {
   const { dispatch } = useEvents();
+  const { width } = useWindowDimensions();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -212,7 +214,9 @@ export default function CreateEventScreen() {
       {/* ── Success Modal ── */}
       <Modal visible={showSuccessModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+          <View
+            style={[styles.modalCard, width > 768 && styles.modalCardLarge]}
+          >
             <View style={styles.successIconCircle}>
               <Ionicons name="checkmark" size={36} color="#FFF" />
             </View>
@@ -426,11 +430,19 @@ const styles = StyleSheet.create({
     padding: 28,
     width: "100%",
     alignItems: "center",
+
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 12 },
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
     shadowOpacity: 0.15,
     shadowRadius: 24,
     elevation: 12,
+  },
+
+  modalCardLarge: {
+    maxWidth: 420,
   },
 
   successIconCircle: {

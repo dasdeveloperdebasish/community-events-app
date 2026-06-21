@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { FlatList, View, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  FlatList,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  useWindowDimensions,
+} from "react-native";
 import { router } from "expo-router";
 
 import Screen from "@/components/common/Screen";
@@ -14,6 +20,13 @@ import { SPACING } from "@/constants/spacing";
 
 export default function MyEventsScreen() {
   const { state, dispatch } = useEvents();
+  const { width } = useWindowDimensions();
+
+  const numColumns = width >= 900 ? 2 : 1;
+
+  const horizontalGap = 16;
+
+  const cardWidth = numColumns === 2 ? (width - horizontalGap - 32) / 2 : width;
 
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
 
@@ -41,9 +54,12 @@ export default function MyEventsScreen() {
     <Screen>
       <FlatList
         data={events}
+        numColumns={numColumns}
+        key={numColumns}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
         ListHeaderComponent={
           <>
             <View style={styles.header}>
@@ -114,26 +130,35 @@ export default function MyEventsScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <EventCard
-            event={{
-              ...item,
-              isRSVPed: true,
-            }}
-            onPress={() =>
-              router.push({
-                pathname: "/event/[id]",
-                params: {
-                  id: item.id,
-                },
-              })
-            }
-            onRSVPPress={() =>
-              dispatch({
-                type: "TOGGLE_RSVP",
-                payload: item.id,
-              })
-            }
-          />
+          <View
+            style={[
+              styles.cardContainer,
+              numColumns > 1 && {
+                width: cardWidth,
+              },
+            ]}
+          >
+            <EventCard
+              event={{
+                ...item,
+                isRSVPed: true,
+              }}
+              onPress={() =>
+                router.push({
+                  pathname: "/event/[id]",
+                  params: {
+                    id: item.id,
+                  },
+                })
+              }
+              onRSVPPress={() =>
+                dispatch({
+                  type: "TOGGLE_RSVP",
+                  payload: item.id,
+                })
+              }
+            />
+          </View>
         )}
       />
     </Screen>
@@ -200,6 +225,13 @@ const styles = StyleSheet.create({
 
   activeTabText: {
     color: "#FFFFFF",
+  },
+  columnWrapper: {
+    justifyContent: "space-between",
+  },
+
+  cardContainer: {
+    marginBottom: 16,
   },
 
   sectionHeader: {

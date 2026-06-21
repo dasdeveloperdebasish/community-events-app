@@ -5,6 +5,7 @@ import {
   useWindowDimensions,
   View,
   Pressable,
+  StyleSheet,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -23,7 +24,11 @@ import { useEvents } from "@/hooks/useEvents";
 export default function HomeScreen() {
   const { state, dispatch } = useEvents();
   const { width } = useWindowDimensions();
-  const numColumns = width >= 768 ? 2 : 1;
+
+  const numColumns = width >= 900 ? 2 : 1;
+
+  const horizontalGap = 16;
+  const cardWidth = numColumns === 2 ? (width - 32 - horizontalGap) / 2 : width;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -37,7 +42,7 @@ export default function HomeScreen() {
       dispatch({ type: "FETCH_START" });
       const events = await getEvents();
       dispatch({ type: "FETCH_SUCCESS", payload: events });
-    } catch (error) {
+    } catch {
       dispatch({ type: "FETCH_ERROR", payload: "Failed to load events" });
     }
   };
@@ -51,11 +56,14 @@ export default function HomeScreen() {
     const matchesCategory =
       state.selectedCategory === "All" ||
       event.category === state.selectedCategory;
+
     const query = searchQuery.toLowerCase();
+
     const matchesSearch =
       event.title.toLowerCase().includes(query) ||
       event.location.toLowerCase().includes(query) ||
       event.category.toLowerCase().includes(query);
+
     return matchesCategory && matchesSearch;
   });
 
@@ -71,66 +79,32 @@ export default function HomeScreen() {
         key={numColumns}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        columnWrapperStyle={numColumns > 1 ? { gap: 16 } : undefined}
+        contentContainerStyle={styles.contentContainer}
+        columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
         ListHeaderComponent={
           <>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-                paddingTop: 8,
-                marginBottom: 16,
-              }}
-            >
-              <View style={{ flex: 1, paddingRight: 12 }}>
-                <AppText
-                  style={{
-                    fontSize: 28,
-                    fontWeight: "800",
-                    letterSpacing: -0.5,
-                    lineHeight: 34,
-                    color: "#111827",
-                  }}
-                >
-                  Discover Events
-                </AppText>
-                <AppText
-                  style={{
-                    fontSize: 14,
-                    color: "#6B7280",
-                    marginTop: 2,
-                    lineHeight: 20,
-                  }}
-                >
+            <View style={styles.headerContainer}>
+              <View style={styles.headerTextContainer}>
+                <AppText style={styles.title}>Discover Events</AppText>
+
+                <AppText style={styles.subtitle}>
                   Explore local events around you
                 </AppText>
               </View>
             </View>
 
             <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: "#FFF",
-                borderWidth: 1.5,
-                borderColor: isSearchFocused ? "#2563EB" : "#E5E7EB",
-                borderRadius: 14,
-                paddingHorizontal: 14,
-                marginBottom: 14,
-                shadowColor: "#000",
-                shadowOpacity: isSearchFocused ? 0.07 : 0.03,
-                shadowRadius: 6,
-                shadowOffset: { width: 0, height: 2 },
-                elevation: isSearchFocused ? 3 : 1,
-              }}
+              style={[
+                styles.searchContainer,
+                isSearchFocused && styles.searchContainerFocused,
+              ]}
             >
               <Ionicons
                 name="search"
                 size={18}
                 color={isSearchFocused ? "#2563EB" : "#9CA3AF"}
               />
+
               <TextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -138,14 +112,9 @@ export default function HomeScreen() {
                 placeholderTextColor="#9CA3AF"
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
-                style={{
-                  flex: 1,
-                  paddingVertical: 13,
-                  marginLeft: 9,
-                  fontSize: 15,
-                  color: "#111827",
-                }}
+                style={styles.searchInput}
               />
+
               {searchQuery.length > 0 && (
                 <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
                   <Ionicons name="close-circle" size={18} color="#9CA3AF" />
@@ -156,39 +125,33 @@ export default function HomeScreen() {
             <CategoryTabs
               selectedCategory={state.selectedCategory}
               onSelectCategory={(category) =>
-                dispatch({ type: "SET_CATEGORY", payload: category })
+                dispatch({
+                  type: "SET_CATEGORY",
+                  payload: category,
+                })
               }
             />
 
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginTop: 18,
-                marginBottom: 12,
-              }}
-            >
-              <AppText
-                style={{
-                  fontSize: 17,
-                  fontWeight: "700",
-                  color: "#111827",
-                  letterSpacing: -0.2,
-                }}
-              >
+            <View style={styles.sectionHeader}>
+              <AppText style={styles.sectionTitle}>
                 {state.selectedCategory === "All"
                   ? "All Events"
                   : `${state.selectedCategory} Events`}
               </AppText>
-              <AppText style={{ fontSize: 13, color: "#6B7280" }}>
+
+              <AppText style={styles.resultCount}>
                 {filteredEvents.length} found
               </AppText>
             </View>
           </>
         }
         renderItem={({ item }) => (
-          <View style={{ flex: 1 }}>
+          <View
+            style={[
+              styles.cardContainer,
+              numColumns > 1 ? { width: cardWidth } : styles.mobileCard,
+            ]}
+          >
             <EventCard
               event={item}
               onPress={() =>
@@ -198,7 +161,10 @@ export default function HomeScreen() {
                 })
               }
               onRSVPPress={() =>
-                dispatch({ type: "TOGGLE_RSVP", payload: item.id })
+                dispatch({
+                  type: "TOGGLE_RSVP",
+                  payload: item.id,
+                })
               }
             />
           </View>
@@ -208,3 +174,103 @@ export default function HomeScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    paddingBottom: 120,
+  },
+
+  columnWrapper: {
+    justifyContent: "space-between",
+  },
+
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    paddingTop: 8,
+    marginBottom: 16,
+  },
+
+  headerTextContainer: {
+    flex: 1,
+    paddingRight: 12,
+  },
+
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+    lineHeight: 34,
+    color: "#111827",
+  },
+
+  subtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginTop: 2,
+    lineHeight: 20,
+  },
+
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    marginBottom: 14,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    elevation: 1,
+  },
+
+  searchContainerFocused: {
+    borderColor: "#2563EB",
+    shadowOpacity: 0.07,
+    elevation: 3,
+  },
+
+  searchInput: {
+    flex: 1,
+    paddingVertical: 13,
+    marginLeft: 9,
+    fontSize: 15,
+    color: "#111827",
+  },
+
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 18,
+    marginBottom: 12,
+  },
+
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#111827",
+    letterSpacing: -0.2,
+  },
+
+  resultCount: {
+    fontSize: 13,
+    color: "#6B7280",
+  },
+
+  cardContainer: {
+    marginBottom: 16,
+  },
+
+  mobileCard: {
+    width: "100%",
+  },
+});

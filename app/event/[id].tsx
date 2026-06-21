@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  useWindowDimensions,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { formatDate } from "date-fns";
@@ -27,6 +28,8 @@ import { generateICS } from "@/utils/calendar";
 export default function EventDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { state, dispatch } = useEvents();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
 
   const [heroLoading, setHeroLoading] = useState(true);
   const [heroError, setHeroError] = useState(false);
@@ -70,7 +73,6 @@ export default function EventDetailsScreen() {
         <Ionicons name="arrow-back" size={22} color="#FFF" />
       </TouchableOpacity>
 
-      {/* ── Hero Image ── */}
       {heroError ? (
         <View style={styles.heroFallback}>
           <Ionicons name="image-outline" size={48} color="#CBD5E1" />
@@ -83,6 +85,7 @@ export default function EventDetailsScreen() {
               <ActivityIndicator size="large" color="#CBD5E1" />
             </View>
           )}
+
           <Image
             source={{ uri: event.imageUrl }}
             style={[styles.image, heroLoading && styles.imageHidden]}
@@ -104,6 +107,7 @@ export default function EventDetailsScreen() {
         </View>
 
         <AppText style={styles.title}>{event.title}</AppText>
+
         <AppText style={styles.description}>{event.description}</AppText>
 
         <View style={styles.infoCard}>
@@ -137,21 +141,43 @@ export default function EventDetailsScreen() {
               {event.attendeeCount} Attendees
             </AppText>
           </View>
+
           <AttendeeAvatars attendeeCount={event.attendeeCount} />
         </View>
 
-        <View style={styles.rsvpContainer}>
-          <AppButton
-            title={event.isRSVPed ? "Going ✓" : "RSVP Event"}
-            onPress={() => dispatch({ type: "TOGGLE_RSVP", payload: event.id })}
-          />
+        <View
+          style={[
+            styles.actionContainer,
+            isLargeScreen && styles.actionContainerLarge,
+          ]}
+        >
+          <View
+            style={[
+              styles.actionButtonWrapper,
+              isLargeScreen && styles.actionButtonLarge,
+            ]}
+          >
+            <AppButton
+              title={event.isRSVPed ? "Going ✓" : "RSVP Event"}
+              onPress={() =>
+                dispatch({
+                  type: "TOGGLE_RSVP",
+                  payload: event.id,
+                })
+              }
+            />
+          </View>
+
+          <View
+            style={[
+              styles.actionButtonWrapper,
+              isLargeScreen && styles.actionButtonLarge,
+            ]}
+          >
+            <AppButton title="📅 Add To Calendar" onPress={exportToCalendar} />
+          </View>
         </View>
 
-        <View style={styles.calendarContainer}>
-          <AppButton title="📅 Add To Calendar" onPress={exportToCalendar} />
-        </View>
-
-        {/* ── Host Section ── */}
         <View style={styles.hostSection}>
           <AppText style={styles.hostTitle}>Hosted By</AppText>
 
@@ -160,11 +186,12 @@ export default function EventDetailsScreen() {
             onPress={() =>
               router.push({
                 pathname: "/host/[id]",
-                params: { id: event.hostName },
+                params: {
+                  id: event.hostName,
+                },
               })
             }
           >
-            {/* Host Avatar */}
             {avatarError ? (
               <View style={styles.avatarFallback}>
                 <Ionicons name="person" size={28} color="#CBD5E1" />
@@ -176,8 +203,11 @@ export default function EventDetailsScreen() {
                     <ActivityIndicator size="small" color="#CBD5E1" />
                   </View>
                 )}
+
                 <Image
-                  source={{ uri: event.hostAvatar }}
+                  source={{
+                    uri: event.hostAvatar,
+                  }}
                   style={[
                     styles.hostAvatar,
                     avatarLoading && styles.imageHidden,
@@ -195,6 +225,7 @@ export default function EventDetailsScreen() {
 
             <View style={styles.hostContent}>
               <AppText style={styles.hostName}>{event.hostName}</AppText>
+
               <AppText style={styles.hostSubtitle}>
                 {event.attendeeCount}+ attendees joined events
               </AppText>
@@ -339,12 +370,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  rsvpContainer: {
+  actionContainer: {
     marginTop: SPACING.lg,
   },
 
-  calendarContainer: {
-    marginTop: 12,
+  actionContainerLarge: {
+    flexDirection: "row",
+    gap: 12,
+  },
+
+  actionButtonWrapper: {
+    marginBottom: 12,
+  },
+
+  actionButtonLarge: {
+    flex: 1,
+    marginBottom: 0,
   },
 
   hostSection: {
