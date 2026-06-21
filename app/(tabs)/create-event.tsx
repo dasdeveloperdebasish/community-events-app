@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Image,
+  Keyboard,
+  KeyboardEvent,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -10,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 
@@ -30,6 +33,14 @@ const categories: Category[] = ["Tech", "Music", "Sports", "Food", "Other"];
 export default function CreateEventScreen() {
   const { dispatch } = useEvents();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+
+  const titleY = useRef(0);
+  const descY = useRef(0);
+  const locationY = useRef(0);
+  const activeFieldY = useRef(0);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -42,6 +53,33 @@ export default function CreateEventScreen() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+
+  useEffect(() => {
+    const onShow = (e: KeyboardEvent) => {
+      const kbHeight = e.endCoordinates.height;
+      setKeyboardOffset(kbHeight);
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          y: activeFieldY.current - 120,
+          animated: true,
+        });
+      }, 50);
+    };
+    const onHide = () => setKeyboardOffset(0);
+
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, onShow);
+    const hideSub = Keyboard.addListener(hideEvent, onHide);
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -72,7 +110,7 @@ export default function CreateEventScreen() {
   };
 
   const createEvent = () => {
-    if (!title.trim() || !description.trim() || !location.trim()) {
+    if (!title.trim() || !description.trim() || !location.trim() || !imageUri) {
       setShowValidationModal(true);
       return;
     }
@@ -87,7 +125,7 @@ export default function CreateEventScreen() {
       attendeeCount: 0,
       hostName: "You",
       hostAvatar: "https://i.pravatar.cc/150?img=20",
-      imageUrl: imageUri || "https://picsum.photos/600/400?random=999",
+      imageUrl: imageUri,
       isCustom: true,
     };
 
@@ -97,26 +135,44 @@ export default function CreateEventScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <ScrollView
-        contentContainerStyle={styles.container}
+        ref={scrollRef}
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.container,
+          { paddingBottom: keyboardOffset || insets.bottom },
+        ]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <AppText style={styles.heading}>Create Event</AppText>
 
-        <View style={styles.field}>
+        <View
+          style={styles.field}
+          onLayout={(e) => {
+            titleY.current = e.nativeEvent.layout.y;
+          }}
+        >
           <AppText style={styles.label}>Title</AppText>
           <TextInput
-            autoFocus
             value={title}
             onChangeText={setTitle}
             placeholder="Event title"
             placeholderTextColor="#9CA3AF"
             style={styles.input}
+            onFocus={() => {
+              activeFieldY.current = titleY.current;
+            }}
           />
         </View>
 
-        <View style={styles.field}>
+        <View
+          style={styles.field}
+          onLayout={(e) => {
+            descY.current = e.nativeEvent.layout.y;
+          }}
+        >
           <AppText style={styles.label}>Description</AppText>
           <TextInput
             value={description}
@@ -125,6 +181,9 @@ export default function CreateEventScreen() {
             placeholderTextColor="#9CA3AF"
             multiline
             style={[styles.input, styles.textArea]}
+            onFocus={() => {
+              activeFieldY.current = descY.current;
+            }}
           />
         </View>
 
@@ -183,7 +242,12 @@ export default function CreateEventScreen() {
           )}
         </View>
 
-        <View style={styles.field}>
+        <View
+          style={styles.field}
+          onLayout={(e) => {
+            locationY.current = e.nativeEvent.layout.y;
+          }}
+        >
           <AppText style={styles.label}>Location</AppText>
           <TextInput
             value={location}
@@ -191,6 +255,9 @@ export default function CreateEventScreen() {
             placeholder="Event location"
             placeholderTextColor="#9CA3AF"
             style={styles.input}
+            onFocus={() => {
+              activeFieldY.current = locationY.current;
+            }}
           />
         </View>
 
@@ -211,7 +278,6 @@ export default function CreateEventScreen() {
         <AppButton title="Create Event" onPress={createEvent} />
       </ScrollView>
 
-      {/* ── Success Modal ── */}
       <Modal visible={showSuccessModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View
@@ -241,9 +307,7 @@ export default function CreateEventScreen() {
 
             <TouchableOpacity
               style={styles.modalSecondaryBtn}
-              onPress={() => {
-                setShowSuccessModal(false);
-              }}
+              onPress={() => setShowSuccessModal(false)}
             >
               <AppText style={styles.modalSecondaryBtnText}>
                 Create Another
@@ -253,7 +317,6 @@ export default function CreateEventScreen() {
         </View>
       </Modal>
 
-      {/* ── Validation Modal ── */}
       <Modal visible={showValidationModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
@@ -263,8 +326,8 @@ export default function CreateEventScreen() {
 
             <AppText style={styles.modalTitle}>Missing Fields</AppText>
             <AppText style={styles.modalSubtitle}>
-              Please fill in the title, description, and location before
-              creating your event.
+              Please fill in the title, description, location, and upload an
+              event image before creating your event.
             </AppText>
 
             <TouchableOpacity
@@ -277,7 +340,6 @@ export default function CreateEventScreen() {
         </View>
       </Modal>
 
-      {/* ── Permission Modal ── */}
       <Modal visible={showPermissionModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
@@ -300,18 +362,25 @@ export default function CreateEventScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: "#F9FAFB",
+  },
+
+  scroll: {
+    flex: 1,
+    backgroundColor: "#F9FAFB",
   },
 
   container: {
+    flexGrow: 1,
     padding: 20,
-    paddingBottom: 40,
+    backgroundColor: "#F9FAFB",
   },
 
   heading: {
@@ -415,7 +484,6 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
-  // ── Modals ──
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -430,12 +498,8 @@ const styles = StyleSheet.create({
     padding: 28,
     width: "100%",
     alignItems: "center",
-
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 12,
-    },
+    shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
     elevation: 12,

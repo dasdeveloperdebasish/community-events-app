@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Platform } from "react-native";
+import { Platform, Pressable } from "react-native";
 
 export default function TabsLayout() {
   return (
@@ -26,6 +26,13 @@ export default function TabsLayout() {
           fontWeight: "600",
           marginTop: 2,
         },
+        tabBarButton: (props: any) => (
+          <Pressable
+            {...props}
+            android_ripple={null}
+            style={[props.style, { opacity: 1 }]}
+          />
+        ),
       }}
     >
       <Tabs.Screen

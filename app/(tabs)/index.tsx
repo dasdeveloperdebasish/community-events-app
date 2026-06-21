@@ -18,7 +18,6 @@ import AppText from "@/components/common/AppText";
 import EventCard from "@/components/event/EventCard";
 import CategoryTabs from "@/components/event/CategoryTabs";
 
-import { getEvents } from "@/services/eventService";
 import { useEvents } from "@/hooks/useEvents";
 
 export default function HomeScreen() {
@@ -46,20 +45,6 @@ export default function HomeScreen() {
       };
     }, [pathname]),
   );
-
-  useEffect(() => {
-    loadEvents();
-  }, []);
-
-  const loadEvents = async () => {
-    try {
-      dispatch({ type: "FETCH_START" });
-      const events = await getEvents();
-      dispatch({ type: "FETCH_SUCCESS", payload: events });
-    } catch {
-      dispatch({ type: "FETCH_ERROR", payload: "Failed to load events" });
-    }
-  };
 
   const eventsWithRSVP = state.events.map((event) => ({
     ...event,
@@ -121,9 +106,10 @@ export default function HomeScreen() {
 
         <CategoryTabs
           selectedCategory={state.selectedCategory}
-          onSelectCategory={(category) =>
-            dispatch({ type: "SET_CATEGORY", payload: category })
-          }
+          onSelectCategory={(category) => {
+            dispatch({ type: "SET_CATEGORY", payload: category });
+            listRef.current?.scrollToOffset({ offset: 0, animated: false });
+          }}
         />
       </View>
 

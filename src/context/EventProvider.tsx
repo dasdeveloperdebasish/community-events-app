@@ -4,6 +4,8 @@ import { EventContext } from "./EventContext";
 import { eventReducer } from "./EventReducer";
 import { EventState } from "./types";
 
+import { getEvents } from "@/services/eventService";
+
 import {
   getCreatedEvents,
   getMyEvents,
@@ -14,7 +16,7 @@ import {
 const initialState: EventState = {
   events: [],
   myEvents: [],
-  loading: false,
+  loading: true,
   error: null,
   selectedCategory: "All",
 };
@@ -27,8 +29,7 @@ export default function EventProvider({ children }: Props) {
   const [state, dispatch] = useReducer(eventReducer, initialState);
 
   useEffect(() => {
-    loadPersistedEvents();
-    loadCreatedEvents();
+    initializeEvents();
   }, []);
 
   useEffect(() => {
@@ -40,23 +41,39 @@ export default function EventProvider({ children }: Props) {
 
     saveCreatedEvents(customEvents);
   }, [state.events]);
-  const loadPersistedEvents = async () => {
-    const events = await getMyEvents();
 
-    dispatch({
-      type: "LOAD_PERSISTED_EVENTS",
-      payload: events,
-    });
+  const initializeEvents = async () => {
+    try {
+      dispatch({ type: "FETCH_START" });
+
+      const [events, myEvents, createdEvents] = await Promise.all([
+        getEvents(),
+        getMyEvents(),
+        getCreatedEvents(),
+      ]);
+
+      dispatch({
+        type: "FETCH_SUCCESS",
+        payload: events,
+      });
+
+      dispatch({
+        type: "LOAD_PERSISTED_EVENTS",
+        payload: myEvents,
+      });
+
+      dispatch({
+        type: "LOAD_CREATED_EVENTS",
+        payload: createdEvents,
+      });
+    } catch {
+      dispatch({
+        type: "FETCH_ERROR",
+        payload: "Failed to load events",
+      });
+    }
   };
 
-  const loadCreatedEvents = async () => {
-    const events = await getCreatedEvents();
-
-    dispatch({
-      type: "LOAD_CREATED_EVENTS",
-      payload: events,
-    });
-  };
   return (
     <EventContext.Provider
       value={{

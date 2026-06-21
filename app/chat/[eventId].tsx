@@ -1,23 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
-  KeyboardAvoidingView,
+  Keyboard,
+  KeyboardEvent,
   Platform,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 import ChatBubble from "@/components/chat/ChatBubble";
 import MessageInput from "@/components/chat/MessageInput";
-
 import { getChatMessages, saveChatMessages } from "@/storage/chatStorage";
-
 import { ChatMessage } from "@/types/ChatMessage";
 import { COLORS } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AppText from "@/components/common/AppText";
 
 const defaultMessages: ChatMessage[] = [
@@ -49,29 +48,57 @@ const autoReplies = [
 ];
 
 export default function ChatScreen() {
-  const { eventId } = useLocalSearchParams<{
-    eventId: string;
-  }>();
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   const listRef = useRef<FlatList>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const insets = useSafeAreaInsets();
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      listRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
   useEffect(() => {
     loadMessages();
 
+    const onShow = (e: KeyboardEvent) => {
+      const kbHeight = e.endCoordinates.height;
+      setKeyboardOffset(kbHeight);
+      scrollToBottom();
+    };
+
+    const onHide = () => setKeyboardOffset(0);
+
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, onShow);
+    const hideSub = Keyboard.addListener(hideEvent, onHide);
+
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      showSub.remove();
+      hideSub.remove();
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
 
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
+
   const loadMessages = async () => {
     const storedMessages = await getChatMessages(eventId);
-
     if (storedMessages.length > 0) {
       setMessages(storedMessages);
     } else {
@@ -92,17 +119,13 @@ export default function ChatScreen() {
     };
 
     const updatedMessages = [...messages, newMessage];
-
     setMessages(updatedMessages);
-
     await saveChatMessages(eventId, updatedMessages);
-
     setInput("");
 
     timeoutRef.current = setTimeout(() => {
       const randomReply =
         autoReplies[Math.floor(Math.random() * autoReplies.length)];
-
       const randomSender = Math.random() > 0.5 ? "John" : "Sarah";
 
       const reply: ChatMessage = {
@@ -115,50 +138,45 @@ export default function ChatScreen() {
 
       setMessages((prev) => {
         const next = [...prev, reply];
-
         saveChatMessages(eventId, next);
-
         return next;
       });
     }, 2000);
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <View style={styles.chatHeader}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backIcon}
-          >
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          marginBottom: keyboardOffset || insets.bottom,
+        },
+      ]}
+    >
+      <View style={styles.chatHeader}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
+          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+        </TouchableOpacity>
+        <AppText style={styles.chatTitle}>Event Discussion</AppText>
+      </View>
 
-          <AppText style={styles.chatTitle}>Event Discussion</AppText>
-        </View>
-        <FlatList
-          ref={listRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.messages}
-          renderItem={({ item }) => <ChatBubble message={item} />}
-          onContentSizeChange={() =>
-            listRef.current?.scrollToEnd({
-              animated: true,
-            })
-          }
-        />
+      <FlatList
+        ref={listRef}
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <ChatBubble message={item} />}
+        contentContainerStyle={styles.messages}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+      />
 
-        <MessageInput
-          value={input}
-          onChangeText={setInput}
-          onSend={sendMessage}
-        />
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <MessageInput
+        value={input}
+        onChangeText={setInput}
+        onSend={sendMessage}
+      />
+    </View>
   );
 }
 
@@ -177,20 +195,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-
     paddingHorizontal: 16,
     paddingVertical: 12,
-
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
-
     backgroundColor: COLORS.background,
   },
 
   backIcon: {
     width: 40,
     height: 40,
-
     justifyContent: "center",
     alignItems: "center",
   },

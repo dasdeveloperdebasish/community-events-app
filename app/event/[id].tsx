@@ -6,13 +6,14 @@ import {
   View,
   ActivityIndicator,
   useWindowDimensions,
+  BackHandler,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { formatDate } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import AppText from "@/components/common/AppText";
 import AppButton from "@/components/common/AppButton";
@@ -43,13 +44,26 @@ export default function EventDetailsScreen() {
     }))
     .find((item) => item.id === id);
 
-  if (!event) {
-    return (
-      <View style={styles.center}>
-        <AppText>Event not found</AppText>
-      </View>
-    );
-  }
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace("/");
+        }
+
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, []),
+  );
 
   const exportToCalendar = async () => {
     try {
@@ -64,12 +78,36 @@ export default function EventDetailsScreen() {
     }
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+    }
+  };
+
+  if (state.loading || state.events.length === 0) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  if (!event) {
+    return (
+      <View style={styles.center}>
+        <AppText>Event not found</AppText>
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: SPACING.xl }}
     >
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <TouchableOpacity onPress={handleBack} style={styles.backButton}>
         <Ionicons name="arrow-back" size={22} color="#FFF" />
       </TouchableOpacity>
 
