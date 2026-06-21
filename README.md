@@ -26,6 +26,8 @@ This project was developed as part of the flydubai React Native / TypeScript off
 - RSVP functionality
 - Host information
 - Deep link support
+- Calendar export
+- Event discussion access
 
 ### My Events
 
@@ -41,6 +43,13 @@ This project was developed as part of the flydubai React Native / TypeScript off
 - Hosted events list
 - Modern profile UI
 
+### Event Discussion (Bonus Feature)
+
+- Community discussion screen
+- Mock chat experience
+- Event-specific conversations
+- Quick participant engagement
+
 ### Create Event (Bonus Feature)
 
 - Create custom events
@@ -52,8 +61,8 @@ This project was developed as part of the flydubai React Native / TypeScript off
 ### Calendar Export (Bonus Feature)
 
 - Export events in iCal (.ics) format
-- Open native calendar applications
-- Save events directly to device calendar
+- Share generated calendar files
+- Import events into native calendar applications
 
 ### Search Events (Bonus Feature)
 
@@ -197,7 +206,7 @@ Implemented tests include:
 Run tests:
 
 ```bash
-npm test
+npm jest
 ```
 
 ---
@@ -248,11 +257,72 @@ npx expo start --web
 
 ## Screenshots
 
-Screenshots can be found in:
+<table>
+  <tr>
+    <td align="center">
+      <img src="./assets/screenshots/discover-screen.png" width="280" alt="Discover Events" />
+      <br />
+      <b>Discover Events</b>
+    </td>
+    <td align="center">
+      <img src="./assets/screenshots/search-screen.png" width="280" alt="Search Events" />
+      <br />
+      <b>Search Events</b>
+    </td>
+  </tr>
 
-```txt
-assets/screenshots
-```
+  <tr>
+    <td align="center">
+      <img src="./assets/screenshots/event-details-screen.png" width="280" alt="Event Details" />
+      <br />
+      <b>Event Details</b>
+    </td>
+    <td align="center">
+      <img src="./assets/screenshots/event-actions-screen.png" width="280" alt="Event Actions" />
+      <br />
+      <b>Event Actions</b>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <img src="./assets/screenshots/host-profile-screen.png" width="280" alt="Host Profile" />
+      <br />
+      <b>Host Profile</b>
+    </td>
+    <td align="center">
+      <img src="./assets/screenshots/my-events-screen.png" width="280" alt="My Events" />
+      <br />
+      <b>My Events</b>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <img src="./assets/screenshots/create-event-screen.png" width="280" alt="Create Event" />
+      <br />
+      <b>Create Event</b>
+    </td>
+    <td align="center">
+      <img src="./assets/screenshots/discussion-screen.png" width="280" alt="Event Discussion" />
+      <br />
+      <b>Event Discussion</b>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <img src="./assets/screenshots/calendar-export-screen.png" width="280" alt="Calendar Export" />
+      <br />
+      <b>Calendar Export</b>
+    </td>
+    <td align="center">
+      <img src="./assets/screenshots/calendar-import-screen.png" width="280" alt="Calendar Import" />
+      <br />
+      <b>Calendar Import</b>
+    </td>
+  </tr>
+</table>
 
 ### Included Screens
 
@@ -315,6 +385,7 @@ AsyncStorage was chosen because:
 - Create Event
 - Image Picker
 - Search Events
+- Event Discussion
 - Calendar Export
 
 ---

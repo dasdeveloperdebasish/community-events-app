@@ -176,6 +176,24 @@ export default function EventDetailsScreen() {
           >
             <AppButton title="📅 Add To Calendar" onPress={exportToCalendar} />
           </View>
+          <View
+            style={[
+              styles.actionButtonWrapper,
+              isLargeScreen && styles.actionButtonLarge,
+            ]}
+          >
+            <AppButton
+              title="💬 Join Discussion"
+              onPress={() =>
+                router.push({
+                  pathname: "/chat/[eventId]",
+                  params: {
+                    eventId: event.id,
+                  },
+                })
+              }
+            />
+          </View>
         </View>
 
         <View style={styles.hostSection}>

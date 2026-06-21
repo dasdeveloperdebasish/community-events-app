@@ -27,6 +27,14 @@ export default function RootLayout() {
             gestureEnabled: true,
           }}
         />
+
+        <Stack.Screen
+          name="chat/[eventId]"
+          options={{
+            headerShown: false,
+            gestureEnabled: true,
+          }}
+        />
       </Stack>
     </EventProvider>
   );

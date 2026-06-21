@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   TextInput,
@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect, usePathname } from "expo-router";
 
 import Screen from "@/components/common/Screen";
 import Loader from "@/components/common/Loader";
@@ -26,12 +26,26 @@ export default function HomeScreen() {
   const { width } = useWindowDimensions();
 
   const numColumns = width >= 900 ? 2 : 1;
-
   const horizontalGap = 16;
   const cardWidth = numColumns === 2 ? (width - 32 - horizontalGap) / 2 : width;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  const listRef = useRef<FlatList>(null);
+  const previousPath = useRef<string>("");
+  const pathname = usePathname();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (previousPath.current === "/create-event") {
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+      }
+      return () => {
+        previousPath.current = pathname;
+      };
+    }, [pathname]),
+  );
 
   useEffect(() => {
     loadEvents();
@@ -56,14 +70,11 @@ export default function HomeScreen() {
     const matchesCategory =
       state.selectedCategory === "All" ||
       event.category === state.selectedCategory;
-
     const query = searchQuery.toLowerCase();
-
     const matchesSearch =
       event.title.toLowerCase().includes(query) ||
       event.location.toLowerCase().includes(query) ||
       event.category.toLowerCase().includes(query);
-
     return matchesCategory && matchesSearch;
   });
 
@@ -73,77 +84,70 @@ export default function HomeScreen() {
 
   return (
     <Screen>
+      <View style={styles.stickyWrapper}>
+        <View style={styles.header}>
+          <AppText style={styles.title}>Discover Events</AppText>
+          <AppText style={styles.subtitle}>
+            Explore local events around you
+          </AppText>
+
+          <View
+            style={[
+              styles.searchContainer,
+              isSearchFocused && styles.searchContainerFocused,
+            ]}
+          >
+            <Ionicons
+              name="search"
+              size={18}
+              color={isSearchFocused ? "#2563EB" : "#9CA3AF"}
+            />
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search events, locations..."
+              placeholderTextColor="#9CA3AF"
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              style={styles.searchInput}
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
+                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+              </Pressable>
+            )}
+          </View>
+        </View>
+
+        <CategoryTabs
+          selectedCategory={state.selectedCategory}
+          onSelectCategory={(category) =>
+            dispatch({ type: "SET_CATEGORY", payload: category })
+          }
+        />
+      </View>
+
       <FlatList
+        ref={listRef}
         data={filteredEvents}
         numColumns={numColumns}
         key={numColumns}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
         contentContainerStyle={styles.contentContainer}
         columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
         ListHeaderComponent={
-          <>
-            <View style={styles.headerContainer}>
-              <View style={styles.headerTextContainer}>
-                <AppText style={styles.title}>Discover Events</AppText>
-
-                <AppText style={styles.subtitle}>
-                  Explore local events around you
-                </AppText>
-              </View>
-            </View>
-
-            <View
-              style={[
-                styles.searchContainer,
-                isSearchFocused && styles.searchContainerFocused,
-              ]}
-            >
-              <Ionicons
-                name="search"
-                size={18}
-                color={isSearchFocused ? "#2563EB" : "#9CA3AF"}
-              />
-
-              <TextInput
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder="Search events, locations..."
-                placeholderTextColor="#9CA3AF"
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-                style={styles.searchInput}
-              />
-
-              {searchQuery.length > 0 && (
-                <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
-                  <Ionicons name="close-circle" size={18} color="#9CA3AF" />
-                </Pressable>
-              )}
-            </View>
-
-            <CategoryTabs
-              selectedCategory={state.selectedCategory}
-              onSelectCategory={(category) =>
-                dispatch({
-                  type: "SET_CATEGORY",
-                  payload: category,
-                })
-              }
-            />
-
-            <View style={styles.sectionHeader}>
-              <AppText style={styles.sectionTitle}>
-                {state.selectedCategory === "All"
-                  ? "All Events"
-                  : `${state.selectedCategory} Events`}
-              </AppText>
-
-              <AppText style={styles.resultCount}>
-                {filteredEvents.length} found
-              </AppText>
-            </View>
-          </>
+          <View style={styles.sectionHeader}>
+            <AppText style={styles.sectionTitle}>
+              {state.selectedCategory === "All"
+                ? "All Events"
+                : `${state.selectedCategory} Events`}
+            </AppText>
+            <AppText style={styles.resultCount}>
+              {filteredEvents.length} found
+            </AppText>
+          </View>
         }
         renderItem={({ item }) => (
           <View
@@ -161,10 +165,7 @@ export default function HomeScreen() {
                 })
               }
               onRSVPPress={() =>
-                dispatch({
-                  type: "TOGGLE_RSVP",
-                  payload: item.id,
-                })
+                dispatch({ type: "TOGGLE_RSVP", payload: item.id })
               }
             />
           </View>
@@ -176,25 +177,14 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  contentContainer: {
-    paddingBottom: 120,
-  },
-
-  columnWrapper: {
-    justifyContent: "space-between",
-  },
-
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
+  stickyWrapper: {
     paddingTop: 8,
-    marginBottom: 16,
+    paddingBottom: 4,
+    backgroundColor: "#F8FAFC",
   },
 
-  headerTextContainer: {
-    flex: 1,
-    paddingRight: 12,
+  header: {
+    marginBottom: 4,
   },
 
   title: {
@@ -209,6 +199,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     marginTop: 2,
+    marginBottom: 10,
     lineHeight: 20,
   },
 
@@ -220,15 +211,11 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 14,
     paddingHorizontal: 14,
-    marginBottom: 14,
-
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOpacity: 0.03,
     shadowRadius: 6,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
 
@@ -246,12 +233,21 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
 
+  contentContainer: {
+    paddingBottom: 120,
+    paddingTop: 0,
+  },
+
+  columnWrapper: {
+    justifyContent: "space-between",
+  },
+
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 18,
     marginBottom: 12,
+    marginTop: 8,
   },
 
   sectionTitle: {

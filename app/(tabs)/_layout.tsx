@@ -7,24 +7,20 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-
         tabBarActiveTintColor: "#2563EB",
         tabBarInactiveTintColor: "#9CA3AF",
-
         tabBarStyle: {
           borderTopWidth: 0,
           backgroundColor: "#FFFFFF",
           height: 82,
           paddingBottom: Platform.OS === "ios" ? 24 : 12,
           paddingTop: 8,
-
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.08,
           shadowRadius: 12,
           elevation: 10,
         },
-
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
@@ -36,6 +32,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Discover",
+          lazy: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "compass" : "compass-outline"}
@@ -50,6 +47,7 @@ export default function TabsLayout() {
         name="my-events"
         options={{
           title: "My Events",
+          lazy: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "calendar" : "calendar-outline"}
@@ -64,6 +62,7 @@ export default function TabsLayout() {
         name="create-event"
         options={{
           title: "Create",
+          lazy: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "add-circle" : "add-circle-outline"}
