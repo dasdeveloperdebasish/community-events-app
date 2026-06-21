@@ -1,9 +1,11 @@
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import EventProvider from "@/context/EventProvider";
 
 export default function RootLayout() {
   return (
     <EventProvider>
+      <StatusBar style="dark" />
       <Stack>
         <Stack.Screen
           name="(tabs)"

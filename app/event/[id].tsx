@@ -65,19 +65,6 @@ export default function EventDetailsScreen() {
     }, []),
   );
 
-  const exportToCalendar = async () => {
-    try {
-      const icsContent = generateICS(event);
-      const fileUri = FileSystem.cacheDirectory + `${event.id}.ics`;
-      await FileSystem.writeAsStringAsync(fileUri, icsContent);
-      const available = await Sharing.isAvailableAsync();
-      if (!available) return;
-      await Sharing.shareAsync(fileUri);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const handleBack = () => {
     if (router.canGoBack()) {
       router.back();
@@ -101,6 +88,19 @@ export default function EventDetailsScreen() {
       </View>
     );
   }
+
+  const exportToCalendar = async () => {
+    try {
+      const icsContent = generateICS(event);
+      const fileUri = FileSystem.cacheDirectory + `${event.id}.ics`;
+      await FileSystem.writeAsStringAsync(fileUri, icsContent);
+      const available = await Sharing.isAvailableAsync();
+      if (!available) return;
+      await Sharing.shareAsync(fileUri);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <ScrollView
